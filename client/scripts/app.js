@@ -7,6 +7,7 @@ class App {
     this.friendList = {};
     this.roomname = 'lobby';
     this.username = '';
+    this.alphanum = new RegExp('^[a-zA-Z0-9]+$');
   }
 
   init() {
@@ -52,7 +53,7 @@ class App {
           app.renderMessage(msg);
           app.renderRoom(msg.roomname);
         }
-        $('#chats').find('.username')/*.not('.' + app.roomname)*/.hide();
+        $('#chats').find('.username').hide();
         $('#chats').find('.' + app.roomname).show();
       },
       error: function (data) {
@@ -68,34 +69,21 @@ class App {
   }
 
   renderMessage(message) {
-    $('#main').append('<div class="username">' + message.username + /*'<br>' + message.text +*/ '</div>');
+    $('#main').append('<div class="username">' + message.username + '</div>');
     $('.username').on('click', function() {
       app.handleUsernameClick();
     });
     $('#main').find('.username').hide();
-    $('#chats').append('<div class="username ' + message.username + ' ' + message.roomname +'"><b>' + message.username + ':</b><br>' + message.text + '</div>');
+    $('#chats').append('<div class="username ' + message.username + ' ' + message.roomname + '"><b>' + message.username + ':</b><br>' + message.text + '</div>');
     $('#chats').find('.' + message.username).on('click', function() {
       app.handleUsernameClick();
     });
-    // $('#chats').append("<div class='chat " + message.roomname + "'>" + message.text + '</div>');
   }
 
   renderRoom(string) {
     var exists = ($('#roomSelect option[value=' + string + ']').length !== 0);
     if (!exists) {
       $('#roomSelect').append('<option value="' + string + '">' + string + '</option>');
-      // $('#roomSelect').change(function() {
-      //   var room = $(this).val();
-      //   alert(room);
-      //   if (room === 'create') {
-      //     var newRoom = prompt('Please enter a room name.');
-      //     app.renderRoom(newRoom);
-      //   }
-
-      //   this.roomname = room;
-      //   // call a function that filters the chat by selected room
-      //   // change user's this.room to that room
-      // });
     }
   }
 
@@ -105,13 +93,7 @@ class App {
 
   }
 
-  handleSubmit(){
-    // create a message object
-    // grab current user's name
-    // grab current user's room
-    // grab current user's message in text input field
-    // package that data the object
-    // invoke app.send(message object)
+  handleSubmit() {
     console.log('handleSubmit called');
     var msg = { username: '', text: '', roomname: ''};
     msg.username = app.username;
@@ -120,7 +102,22 @@ class App {
     app.send(msg);
   }
 
-};
+  parseEscapeCharacter(string) {
+    var stringArray = string.split('');
+    var escaped = '';
+    var result = '';
+    for (var character = 0; character < stringArray.length; character++) {
+      if (!alphanum.test(stringArray[character])) {
+        escaped = '\\' + stringArray[character];
+        result += escaped;
+      } else {
+        result += stringArray[character];
+      }
+    }
+    return result;
+  }
+
+}
 
 let app = new App;
 
@@ -131,25 +128,27 @@ $(document).ready(function() {
 
   app.username = window.location.search.slice(10);
 
-  $('#send').submit(function(event){
+  $('#send').submit(function(event) {
     console.log('i am clicked');
     app.handleSubmit();
     event.preventDefault();
   });
 
-  $('body').append("<div class='chat'></div>");
+  $('body').append('<div class="chat"></div>');
   console.log($('#main .username'));
-  $('.chat').append($(".username").find('div').text() + " " + $("#chats").text());
+  $('.chat').append($('.username').find('div').text() + ' ' + $('#chats').text());
 
   $('#roomSelect').change(function() {
     var room = $(this).val();
     if (room === 'create') {
       var newRoom = prompt('Please enter a room name.');
       app.renderRoom(newRoom);
+      app.roomname = newRoom;
+    } else {
+      app.roomname = room;
     }
-    this.roomname = room;
     // filter out the room
-    $('#chats').find('.username')/*.not('.' + room)*/.hide();
+    $('#chats').find('.username').hide();
     $('#chats').find('.' + room).show();
   });
 
