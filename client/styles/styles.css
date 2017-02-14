@@ -59,7 +59,7 @@ form input[type=text] {
     padding: 5px;
 }
 
-.chat {
+div > .username {
     padding: 5px;
     margin-bottom: 5px;
     background-color: #eee;
@@ -69,9 +69,14 @@ form input[type=text] {
     font-weight: 800;
 }
 
-.chat:hover {
+div > .username:hover {
     background-color: #ddd;
 }
+
+
+/*.chat:hover .username:hover {
+    background-color: #ddd;
+}*/
 
 .spinner {
     float: right;
