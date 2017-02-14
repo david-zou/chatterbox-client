@@ -29,6 +29,19 @@
     <div id="main">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
+      <form id="send">
+        <textarea> </textarea>
+        <input type="submit" class="submit" value="Submit">
+      </form>
+      <ul id="roomSelect">Drop Down
+        <li>
+          <div>This Div</div>
+        </li>
+      </ul>
+      <script>(function() {
+        $('#roomSelect').menu();
+      });
+      </script>
     </div>
     <div id="chats"></div>
   </body>

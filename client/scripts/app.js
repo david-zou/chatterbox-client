@@ -5,7 +5,7 @@
     constructor() {
       this.server = 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages';
       // this.roomname = room;
-      // this.data = [];
+      
       
     }
     init() {
@@ -54,8 +54,15 @@
       // this.fetch();
       // console.log($('#chats').text($('<div>message</div>')));
       // $mes = $('<div><</div>');
-      $('#chats').append($('<div>' + message.text + '</div>'));
+      
+
       $('#main').append('<div class="username">' + message.username + '</div>');
+      $('#main').find('.username').on('click', function(){
+        app.handleUsernameClick();
+        console.log('i am clicked');
+      });
+
+      $('#chats').append($('<div>' + message.text + '</div>'));
     }
     renderRoom(string) {
         // $.ajax({
@@ -76,11 +83,11 @@
 
     }
     handleUsernameClick() {
-      console.log('handleUsernameClick called')
-
+      console.log('handleUsernameClick called');
     }
     handleSubmit(){
-      // console.log('handleSubmit called');
+      console.log('handleSubmit called');
+
     }
   };
 
@@ -94,15 +101,9 @@ $(document).ready(function() {
   app.init(); 
 
   $('#send .submit').on('submit', function(){
-    app.handleSubmit();
-    // console.log('i am clicked');
-  });
-
-  $('#main').find('.username').click(function(){
-    app.handleUsernameClick();
     console.log('i am clicked');
+    app.handleSubmit();
   });
 
-  console.log($('#main').find('.username'));
 
 });

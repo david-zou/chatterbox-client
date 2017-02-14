@@ -60,6 +60,8 @@ describe('chatterbox', function() {
       it('should submit a GET request via $.ajax', function(done) {
         app.fetch();
         expect($.ajax.calledOnce).to.be.true;
+        console.log('ajaxURL',$.ajax.args[0][0].url);
+        console.log(app.server);
         ajaxUrl = typeof $.ajax.args[0][0] === 'string' ? $.ajax.args[0][0] : $.ajax.args[0][0].url;
         expect(ajaxUrl).to.equal(app.server);
         done();
