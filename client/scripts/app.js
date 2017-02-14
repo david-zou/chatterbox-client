@@ -6,7 +6,6 @@
       this.server = 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages';
       // this.roomname = room;
       
-      
     }
     init() {
       this.fetch();
@@ -35,9 +34,15 @@
         type: 'GET',
         contentType: 'application/json',
         success: function (data) {
+          // debugger;
           console.log('MESSAGE RECEIVED', data);
           for (var index = 0; index < data.results.length; index++) {
-            $('#chats').append(data.results[index].text + '<br>');
+            // $('#chats').append(data.results[index].text + '<br>');
+            var msg = { username: '', text: '', roomname: ''};
+            msg.username = data.results[index].username;
+            msg.text = data.results[index].text;
+            msg.roomname = data.results[index].roomname;
+            app.renderMessage(msg);
           }
         },
         error: function (data) {
@@ -48,18 +53,11 @@
     }
     clearMessages() {
       $('#chats').text('');
-
     }
     renderMessage(message) {
-      // this.fetch();
-      // console.log($('#chats').text($('<div>message</div>')));
-      // $mes = $('<div><</div>');
-      
-
       $('#main').append('<div class="username">' + message.username + '</div>');
       $('#main').find('.username').on('click', function(){
         app.handleUsernameClick();
-        console.log('i am clicked');
       });
 
       $('#chats').append($('<div>' + message.text + '</div>'));
@@ -73,14 +71,13 @@
         // contentType: 'application/json',
         // success: function (data) {
         //   console.log('ROOM CREATED', data);
-        $('#roomSelect').append('<li><div>' + string + '</li></div>');
+        $('#roomSelect').append('<option value="' + string + '">' + string + '</option>');
       //   },
       //   error: function (data) {
       //     // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       //     console.error('chatterbox: Failed to put room', data);
       //   }
       // });
-
     }
     handleUsernameClick() {
       console.log('handleUsernameClick called');
