@@ -1,16 +1,15 @@
 // YOUR CODE HERE:
 
- class App {
-    constructor() {
-      this.server = '';
-      // console.log('this is server', this.server);
+$('.chats')
 
+
+ class App {
+    constructor(server, room) {
+      this.server = 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages';
+      this.roomname = room;
     }
     init() {
       this.fetch();
-      // console.log(fetched);
-      // this.server = fetched.url;
-
     }
     send(message) {
       $.ajax({
@@ -34,17 +33,15 @@
         // This is the url you should use to communicate with the parse API server.
         url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
         type: 'GET',
-        // data: JSON.stringify(message),
         contentType: 'application/json',
         success: function (data) {
-          console.log('MESSAGE RECEIVED', data); //chatterbox: Message sent');
+          console.log('MESSAGE RECEIVED', data);
         },
         error: function (data) {
           // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
-          console.error('chatterbox: Failed to send message', data);
+          console.error('chatterbox: Failed to fetch message', data);
         }
       });
-      this.server = $.ajax.args[0][0].url;
     }
     clearMessages() {
 
@@ -52,7 +49,23 @@
     renderMessage() {
 
     }
-    renderRoom() {
+    renderRoom(string) {
+      console.log('renderRoom called');
+      console.log('ROOM STRING', string);
+        $.ajax({
+        // This is the url you should use to communicate with the parse API server.
+        url: 'http://parse.sfs.hackreactor.com/chatterbox/classes', // /messages
+        type: 'PUT',
+        data: string,
+        contentType: 'application/json',
+        success: function (data) {
+          console.log('ROOM CREATED', data);
+        },
+        error: function (data) {
+          // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
+          console.error('chatterbox: Failed to put room', data);
+        }
+      });
 
     }
     handleUsernameClick() {
@@ -62,9 +75,9 @@
 
     }
   };
-// console.log(new App());
 
 let app = new App;
+console.log(app.fetch());
 
 
 //   JQUERY DOCUMENT ------------------
@@ -72,10 +85,8 @@ $(document).ready(function() {
 
   app.init(); 
 
-  // app.fetch();
-
-
-
-
+  $('.message').on('click', function(){
+    console.log('i am clicked');
+  });
 
 });
