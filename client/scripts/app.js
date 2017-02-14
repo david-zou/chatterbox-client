@@ -5,7 +5,7 @@ class App {
   constructor() {
     this.server = 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages';
     this.friendList = {};
-    this.roomname = '';
+    this.roomname = 'lobby';
     this.username = '';
   }
 
@@ -28,34 +28,39 @@ class App {
         console.error('chatterbox: Failed to send message', data);
       }
     });
-    // this.fetch();
+    this.fetch();
   }
 
   fetch() {
+    app.clearMessages();
+    // setInterval(function() {
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
       url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
       type: 'GET',
+      data: {
+        'order': '-createdAt'
+      },
       contentType: 'application/json',
       success: function (data) {
         console.log('MESSAGE RECEIVED', data);
-        // for (var index = 0; index < data.results.length; index++) {
-        for (var index = data.results.length-1; index >= 0; index--) {
+        for (var index = 0; index < data.results.length; index++) {
           var msg = { username: '', text: '', roomname: ''};
           msg.username = data.results[index].username;
           msg.text = data.results[index].text;
           msg.roomname = data.results[index].roomname;
           app.renderMessage(msg);
           app.renderRoom(msg.roomname);
-          app.roomname = msg.roomname;
         }
-
+        $('#chats').find('.username')/*.not('.' + app.roomname)*/.hide();
+        $('#chats').find('.' + app.roomname).show();
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
         console.error('chatterbox: Failed to fetch message', data);
       }
     });
+  // }, 5000);
   }
 
   clearMessages() {
@@ -64,12 +69,11 @@ class App {
 
   renderMessage(message) {
     $('#main').append('<div class="username">' + message.username + /*'<br>' + message.text +*/ '</div>');
-    $/*('#main').find('.username')*/('.username').on('click', function() {
-      // this should only run once per click
+    $('.username').on('click', function() {
       app.handleUsernameClick();
     });
     $('#main').find('.username').hide();
-    $('#chats').append('<div class="username ' + message.username + '">' + message.username + '<br>' + message.text + '</div>');
+    $('#chats').append('<div class="username ' + message.username + ' ' + message.roomname +'"><b>' + message.username + ':</b><br>' + message.text + '</div>');
     $('#chats').find('.' + message.username).on('click', function() {
       app.handleUsernameClick();
     });
@@ -130,7 +134,7 @@ $(document).ready(function() {
   $('#send').submit(function(event){
     console.log('i am clicked');
     app.handleSubmit();
-    return;
+    event.preventDefault();
   });
 
   $('body').append("<div class='chat'></div>");
@@ -139,15 +143,14 @@ $(document).ready(function() {
 
   $('#roomSelect').change(function() {
     var room = $(this).val();
-    alert(room);
     if (room === 'create') {
       var newRoom = prompt('Please enter a room name.');
       app.renderRoom(newRoom);
     }
-
     this.roomname = room;
-    // call a function that filters the chat by selected room
-    // change user's this.room to that room
+    // filter out the room
+    $('#chats').find('.username')/*.not('.' + room)*/.hide();
+    $('#chats').find('.' + room).show();
   });
 
 });
