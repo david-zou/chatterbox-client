@@ -2,7 +2,7 @@
 
  class App {
     constructor() {
-      // this.server = '';
+      this.server = '';
       // console.log('this is server', this.server);
 
     }
@@ -44,7 +44,7 @@
           console.error('chatterbox: Failed to send message', data);
         }
       });
-
+      this.server = $.ajax.args[0][0].url;
     }
     clearMessages() {
 
