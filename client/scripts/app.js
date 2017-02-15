@@ -126,13 +126,14 @@ class App {
       stringified = 'undefined';
     } else if (string === null) {
       stringified = 'null';
-    } else if (string === 'username') {
+    } else if (string === 'username' || string === '.username') {
       return 'username123';
     } else {
-      stringified = JSON.stringify(string);
+      stringified = string;
     }
-    stringified = stringified.replace(/%20/g, '_');
-    var stringArray = stringified.split('');
+    var stringifiedNoSpace = stringified.replace(/%20/g, '_');
+    var stringToBeProcessed = stringifiedNoSpace.replace(/\./g, '');
+    var stringArray = stringToBeProcessed.split('');
     var escaped = '';
     var result = '';
     for (var character = 0; character < stringArray.length; character++) {
