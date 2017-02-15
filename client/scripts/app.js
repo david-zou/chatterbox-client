@@ -7,7 +7,7 @@ class App {
     this.friendList = {};
     this.roomname = 'lobby';
     this.username = '';
-    this.alphanum = new RegExp('^[a-zA-Z0-9]+$');
+    this.alphanum = new RegExp('^[a-zA-Z0-9 ]+$');
   }
 
   init() {
@@ -29,7 +29,6 @@ class App {
         console.error('chatterbox: Failed to send message', data);
       }
     });
-    this.fetch();
   }
 
   fetch() {
@@ -69,6 +68,9 @@ class App {
   }
 
   renderMessage(message) {
+    message.username = this.parseEscapeCharacter(message.username);
+    message.text = this.parseEscapeCharacter(message.text);
+    message.roomname = this.parseEscapeCharacter(message.roomname);
     $('#main').append('<div class="username">' + message.username + '</div>');
     $('.username').on('click', function() {
       app.handleUsernameClick();
@@ -81,6 +83,10 @@ class App {
   }
 
   renderRoom(string) {
+    string = this.parseEscapeCharacter(string);
+    if (string.length === 0) {
+      return;
+    }
     var exists = ($('#roomSelect option[value=' + string + ']').length !== 0);
     if (!exists) {
       $('#roomSelect').append('<option value="' + string + '">' + string + '</option>');
@@ -96,10 +102,12 @@ class App {
   handleSubmit() {
     console.log('handleSubmit called');
     var msg = { username: '', text: '', roomname: ''};
-    msg.username = app.username;
+    msg.username = this.username;
     msg.text = $('#send').find('input').val();
-    msg.roomname = app.roomname;
-    app.send(msg);
+    msg.roomname = this.roomname;
+    this.send(msg);
+    $('#send').find('.textfield').val('');
+    this.fetch();
   }
 
   parseEscapeCharacter(string) {
@@ -107,8 +115,7 @@ class App {
     var escaped = '';
     var result = '';
     for (var character = 0; character < stringArray.length; character++) {
-      if (!alphanum.test(stringArray[character])) {
-        escaped = '\\' + stringArray[character];
+      if (!this.alphanum.test(stringArray[character])) {
         result += escaped;
       } else {
         result += stringArray[character];
@@ -134,14 +141,13 @@ $(document).ready(function() {
     event.preventDefault();
   });
 
-  $('body').append('<div class="chat"></div>');
-  console.log($('#main .username'));
-  $('.chat').append($('.username').find('div').text() + ' ' + $('#chats').text());
-
   $('#roomSelect').change(function() {
     var room = $(this).val();
     if (room === 'create') {
       var newRoom = prompt('Please enter a room name.');
+      if (newRoom === null) {
+        return;
+      }
       app.renderRoom(newRoom);
       app.roomname = newRoom;
     } else {
