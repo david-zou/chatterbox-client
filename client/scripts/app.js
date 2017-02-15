@@ -13,15 +13,10 @@ class App {
 
   init() {
     this.fetch();
-    // setInterval(function() {
-    //   app.fetch();
-    // }, 3000);
+    setInterval(function() {
+      app.fetch();
+    }, 3000);
   }
-
-  // escapeHTML(string) {
-  //   if (!string) {return;}
-  //   return string.replace({/[&<>"'=\/]g, ''});
-  // }
 
   send(message) {
     $.ajax({
@@ -59,6 +54,9 @@ class App {
           msg.roomname = data.results[index].roomname;
           app.renderMessage(msg);
           app.renderRoom(msg.roomname);
+          if (app.friendList[msg.username]) {
+            $('.' + msg.username).addClass('friend');
+          }
         }
         $('#chats').find('.username').hide();
         $('#chats').find('.' + app.roomname).show();
