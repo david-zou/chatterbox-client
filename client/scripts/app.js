@@ -7,21 +7,52 @@ class App {
     this.friendList = {};
     this.roomname = 'lobby';
     this.username = '';
+    this.messages = [];
+    this.lastMessage = 0;
     this.alphanumHTML = new RegExp('^[a-zA-Z0-9]+$');
     this.alphanumText = new RegExp('^[a-zA-Z0-9 ]+$');
   }
 
   init() {
+    
+    app.username = window.location.search.slice(10);
+    this.$chats = $('#chats');
+    this.$message = $('#message');
+    this.$roomSelect = $('#roomSelect');
+    this.$send = $('#send');
+
+    $('#send').submit(function(event) {
+      app.handleSubmit();
+      event.preventDefault();
+    });
+
+    $('#roomSelect').change(function() {
+      var room = $(this).val();
+      if (room === 'create') {
+        var newRoom = prompt('Please enter a room name.');
+        if (newRoom === null) {
+          return;
+        }
+        app.renderRoom(newRoom);
+        app.roomname = newRoom;
+      } else {
+        app.roomname = room;
+      }
+      // filter out the room
+      $('#chats').find('.username').hide();
+      $('#chats').find('.' + room).show();
+    });
+
     this.fetch();
-    setInterval(function() {
-      app.fetch();
-    }, 3000);
+    // setInterval(function() {
+    //   app.fetch();
+    // }, 3000);
   }
 
   send(message) {
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
-      url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
+      url: app.server,
       type: 'POST',
       data: JSON.stringify(message),
       contentType: 'application/json',
@@ -36,28 +67,41 @@ class App {
   }
 
   fetch() {
-    app.clearMessages();
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
-      url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
+      url: app.server,
       type: 'GET',
       data: {
         'order': '-createdAt'
       },
       contentType: 'application/json',
       success: function (data) {
-        console.log('MESSAGE RECEIVED', data);
-        for (var index = 0; index < data.results.length; index++) {
-          var msg = { username: '', text: '', roomname: ''};
-          msg.username = data.results[index].username;
-          msg.text = data.results[index].text;
-          msg.roomname = data.results[index].roomname;
-          app.renderMessage(msg);
-          app.renderRoom(msg.roomname);
-          if (app.friendList[msg.username]) {
-            $('.' + msg.username).addClass('friend');
-          }
+        if (!data.results || !data.results.length) {
+          return;
         }
+
+        app.messages = data.results;
+
+        var newestMessage = app.messages[app.messages.length-1];
+
+        if (lastMessage.objectId !== newestMessage.objectId) {
+          renderMessages(app.messages);
+        }
+
+        // var msg;
+        
+        // for (var index = 0; index < data.results.length; index++) {
+        //   msg = { username: '', text: '', roomname: ''};
+        //   msg.username = data.results[index].username;
+        //   msg.text = data.results[index].text;
+        //   msg.roomname = data.results[index].roomname;
+        //   app.renderMessage(msg);
+        //   app.renderRoom(msg.roomname);
+        //   if (app.friendList[msg.username]) {
+        //     $('.' + msg.username).addClass('friend');
+        //   }
+        // }
+
         $('#chats').find('.username').hide();
         $('#chats').find('.' + app.roomname).show();
       },
@@ -69,23 +113,44 @@ class App {
   }
 
   clearMessages() {
-    $('#chats').text('');
+    $('#chats').html('');
+  }
+
+  renderMessages(message) {
+    
+    app.clearMessages();
+
+    for (message of app.messages) {
+      renderMessage(message);
+    }
+
   }
 
   renderMessage(message) {
-    var parsedNameHTML = this.parseEscapeCharacterHTML(message.username);
-    var parsedNameText = this.parseEscapeCharacterText(message.username);
-    var parsedText = this.parseEscapeCharacterText(message.text);
-    var parsedRoom = this.parseEscapeCharacterHTML(message.roomname);
-    $('#main').append('<div class="username">' + parsedNameText + '</div>');
-    $('#main').find('.username').on('click', function() {
-      app.handleUsernameClick(parsedNameHTML);
-    });
-    $('#main').find('.username').hide();
-    $('#chats').append('<div class="username ' + parsedNameHTML + ' ' + parsedRoom + '"><b>' + parsedNameText + ':</b><br>' + parsedText + '</div>');
-    $('.username.' + parsedNameHTML).on('click', function() {
-      app.handleUsernameClick(parsedNameHTML);
-    });
+
+    // var parsedNameHTML = this.parseEscapeCharacterHTML(message.username);
+    // var parsedNameText = this.parseEscapeCharacterText(message.username);
+    // var parsedText = this.parseEscapeCharacterText(message.text);
+    // var parsedRoom = this.parseEscapeCharacterHTML(message.roomname);
+    // $('#main').append('<div class="username">' + parsedNameText + '</div>');
+    // $('#main').find('.username').on('click', function() {
+    //   app.handleUsernameClick(parsedNameHTML);
+    // });
+    // $('#main').find('.username').hide();
+    // $('#chats').append('<div class="username ' + parsedNameHTML + ' ' + parsedRoom + '"><b>' + parsedNameText + ':</b><br>' + parsedText + '</div>');
+    // $('.username.' + parsedNameHTML).on('click', function() {
+    //   app.handleUsernameClick(parsedNameHTML);
+    // });
+
+    var $chat = $('<div class="chat"/>');
+
+    var $username = $('<span class="username">' + message.username + '</span>');
+    $username.appendTo($chat);
+
+    var $message = $('<br><span>' + message.text + '</span>');
+    $message.appendTo($chat);
+
+    app.$chats.append($chat);
   }
 
   renderRoom(string) {
@@ -176,30 +241,5 @@ let app = new App;
 $(document).ready(function() { 
 
   app.init();
-
-  app.username = window.location.search.slice(10);
-
-  $('#send').submit(function(event) {
-    console.log('i am clicked');
-    app.handleSubmit();
-    event.preventDefault();
-  });
-
-  $('#roomSelect').change(function() {
-    var room = $(this).val();
-    if (room === 'create') {
-      var newRoom = prompt('Please enter a room name.');
-      if (newRoom === null) {
-        return;
-      }
-      app.renderRoom(newRoom);
-      app.roomname = newRoom;
-    } else {
-      app.roomname = room;
-    }
-    // filter out the room
-    $('#chats').find('.username').hide();
-    $('#chats').find('.' + room).show();
-  });
 
 });
