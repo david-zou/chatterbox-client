@@ -7,7 +7,8 @@ class App {
     this.friendList = {};
     this.roomname = 'lobby';
     this.username = '';
-    this.alphanum = new RegExp('^[a-zA-Z0-9 ]+$');
+    this.alphanumHTML = new RegExp('^[a-zA-Z0-9]+$');
+    this.alphanumText = new RegExp('^[a-zA-Z0-9 ]+$');
   }
 
   init() {
@@ -16,6 +17,11 @@ class App {
     //   app.fetch();
     // }, 3000);
   }
+
+  // escapeHTML(string) {
+  //   if (!string) {return;}
+  //   return string.replace({/[&<>"'=\/]g, ''});
+  // }
 
   send(message) {
     $.ajax({
@@ -69,20 +75,23 @@ class App {
   }
 
   renderMessage(message) {
-    message.username = this.parseEscapeCharacter(message.username);
-    message.text = this.parseEscapeCharacter(message.text);
-    message.roomname = this.parseEscapeCharacter(message.roomname);
-    $('#main').append('<div class="username">' + message.username + '</div>');
+    var parsedNameHTML = this.parseEscapeCharacterHTML(message.username);
+    var parsedNameText = this.parseEscapeCharacterText(message.username);
+    var parsedText = this.parseEscapeCharacterText(message.text);
+    var parsedRoom = this.parseEscapeCharacterHTML(message.roomname);
+    $('#main').append('<div class="username">' + parsedNameText + '</div>');
+    $('#main').find('.username').on('click', function() {
+      app.handleUsernameClick(parsedNameHTML);
+    });
     $('#main').find('.username').hide();
-    $('#chats').append('<div class="username ' + message.username + ' ' + message.roomname + '"><b>' + message.username + ':</b><br>' + message.text + '</div>');
-    $('.' + message.username).on('click', function() {
-      console.log('THIS IS FRIEND', message.username);
-      app.handleUsernameClick(message.username);
+    $('#chats').append('<div class="username ' + parsedNameHTML + ' ' + parsedRoom + '"><b>' + parsedNameText + ':</b><br>' + parsedText + '</div>');
+    $('.username.' + parsedNameHTML).on('click', function() {
+      app.handleUsernameClick(parsedNameHTML);
     });
   }
 
   renderRoom(string) {
-    string = this.parseEscapeCharacter(string);
+    string = this.parseEscapeCharacterHTML(string);
     if (string.length === 0) {
       return;
     }
@@ -93,10 +102,11 @@ class App {
   }
 
   handleUsernameClick(friend) {
-    console.log('handleUsernameClick called');
-    this.friendList[friend] = true;
-    $('.' + friend).addClass('friend');
-
+    console.log('handleUsernameClick called', friend);
+    if (!this.friendList[friend]) {
+      this.friendList[friend] = true;
+      $('.' + friend).addClass('friend');     
+    }
   }
 
   handleSubmit() {
@@ -110,13 +120,47 @@ class App {
     this.fetch();
   }
 
-  parseEscapeCharacter(string) {
-    var stringified = JSON.stringify(string);
+  parseEscapeCharacterHTML(string) {
+    var stringified;
+    if (string === undefined) {
+      stringified = 'undefined';
+    } else if (string === null) {
+      stringified = 'null';
+    } else if (string === 'username') {
+      return 'username123';
+    } else {
+      stringified = JSON.stringify(string);
+    }
+    stringified = stringified.replace(/%20/g, '_');
     var stringArray = stringified.split('');
     var escaped = '';
     var result = '';
     for (var character = 0; character < stringArray.length; character++) {
-      if (!this.alphanum.test(stringArray[character])) {
+      if (!this.alphanumHTML.test(stringArray[character])) {
+        result += escaped;
+      } else {
+        result += stringArray[character];
+      }
+    }
+    return result;
+  }
+
+  parseEscapeCharacterText(string) {
+    var stringified;
+    if (string === undefined) {
+      stringified = 'undefined';
+    } else if (string === null) {
+      stringified = 'null';
+    } else {
+      stringified = JSON.stringify(string);
+    }
+    stringified = stringified.replace(/%20/g, ' ');
+    // console.log(stringified);
+    var stringArray = stringified.split('');
+    var escaped = '';
+    var result = '';
+    for (var character = 0; character < stringArray.length; character++) {
+      if (!this.alphanumText.test(stringArray[character])) {
         result += escaped;
       } else {
         result += stringArray[character];
