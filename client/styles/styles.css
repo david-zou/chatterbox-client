@@ -89,7 +89,8 @@ div > .username:hover {
 }
 
 .friend {
-    color: #fff;
+    font-weight: 800;
+    color: red;
     background-color: #0090da;
 }
 

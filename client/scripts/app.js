@@ -12,6 +12,9 @@ class App {
 
   init() {
     this.fetch();
+    // setInterval(function() {
+    //   app.fetch();
+    // }, 3000);
   }
 
   send(message) {
@@ -33,7 +36,6 @@ class App {
 
   fetch() {
     app.clearMessages();
-    // setInterval(function() {
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
       url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
@@ -60,7 +62,6 @@ class App {
         console.error('chatterbox: Failed to fetch message', data);
       }
     });
-  // }, 5000);
   }
 
   clearMessages() {
@@ -72,13 +73,11 @@ class App {
     message.text = this.parseEscapeCharacter(message.text);
     message.roomname = this.parseEscapeCharacter(message.roomname);
     $('#main').append('<div class="username">' + message.username + '</div>');
-    $('.username').on('click', function() {
-      app.handleUsernameClick();
-    });
     $('#main').find('.username').hide();
     $('#chats').append('<div class="username ' + message.username + ' ' + message.roomname + '"><b>' + message.username + ':</b><br>' + message.text + '</div>');
-    $('#chats').find('.' + message.username).on('click', function() {
-      app.handleUsernameClick();
+    $('.' + message.username).on('click', function() {
+      console.log('THIS IS FRIEND', message.username);
+      app.handleUsernameClick(message.username);
     });
   }
 
@@ -87,15 +86,16 @@ class App {
     if (string.length === 0) {
       return;
     }
-    var exists = ($('#roomSelect option[value=' + string + ']').length !== 0);
+    var exists = ($('#roomSelect option[value="' + string + '"]').length !== 0);
     if (!exists) {
-      $('#roomSelect').append('<option value="' + string + '">' + string + '</option>');
+      $('#roomSelect').prepend('<option value="' + string + '">' + string + '</option>');
     }
   }
 
-  handleUsernameClick() {
+  handleUsernameClick(friend) {
     console.log('handleUsernameClick called');
-      // add as friend 
+    this.friendList[friend] = true;
+    $('.' + friend).addClass('friend');
 
   }
 
@@ -111,7 +111,8 @@ class App {
   }
 
   parseEscapeCharacter(string) {
-    var stringArray = string.split('');
+    var stringified = JSON.stringify(string);
+    var stringArray = stringified.split('');
     var escaped = '';
     var result = '';
     for (var character = 0; character < stringArray.length; character++) {
